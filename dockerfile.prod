@@ -1,0 +1,14 @@
+## 如何选择node镜像请看这里
+## https://zhuanlan.zhihu.com/p/264770720
+FROM node:16.15.0-alpine
+
+ENV TIMEZONE=${timezone:-"Asia/Shanghai"}
+RUN ln -sf /usr/share/zoneinfo/${TIMEZONE} /etc/localtime \
+  && echo "${TIMEZONE}" > /etc/timezone
+
+COPY ./ /my-node-server
+WORKDIR /my-node-server
+
+CMD npm run start:prod
+
+EXPOSE 8000
