@@ -32,7 +32,7 @@ export default function RsaCryptoPage(props) {
   useEffect(() => {
     const room_id = search_params.get("room_id");
     const user_id = search_params.get("user_id");
-    socket.current = io(`ws://localhost:13500?room_id=${room_id}&user_id=${user_id}`);
+    socket.current = io(`ws://${window.location.hostname}:13500?room_id=${room_id}&user_id=${user_id}`);
   }, [search_params]);
 
   useEffect(() => {
