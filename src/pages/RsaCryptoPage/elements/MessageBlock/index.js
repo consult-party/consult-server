@@ -30,6 +30,7 @@ export default function MessageBlock(props) {
     return (
       <Row justify="end" align="top" style={computed_style} className={computed_class}>
         <Space size={10} style={{ padding: "10px 0px" }}>
+          <Avatar style={{ visibility: "hidden" }} />
           <Col className={css.content_block}>
             {content}
           </Col>
@@ -46,6 +47,7 @@ export default function MessageBlock(props) {
         <Col className={css.content_block}>
           {content}
         </Col>
+        <Avatar style={{ visibility: "hidden" }} />
       </Space>
     </Row>
   )

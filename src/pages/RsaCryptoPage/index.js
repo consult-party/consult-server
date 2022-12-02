@@ -72,6 +72,11 @@ export default function RsaCryptoPage(props) {
 
   }, [search_params]);
 
+  const handleScrollHeight = useCallback(() => {
+    document.body.scrollTop = document.body.scrollHeight;
+    requestAnimationFrame(handleScrollHeight);
+  }, []);
+
   const handleBlur = useCallback(() => {
     const user_id = search_params.get("user_id");
     socket.current.emit("input_blur", JSON.stringify({ user_id }));
@@ -80,7 +85,8 @@ export default function RsaCryptoPage(props) {
   const handleFocus = useCallback(() => {
     const user_id = search_params.get("user_id");
     socket.current.emit("input_focus", JSON.stringify({ user_id }));
-  }, [search_params]);
+    requestAnimationFrame(handleScrollHeight);
+  }, [search_params, handleScrollHeight]);
 
   const handlePublish = useCallback(async () => {
     if (!input_message) {
