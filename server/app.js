@@ -1,5 +1,6 @@
 /* eslint-disable import/no-extraneous-dependencies */
 const Koa = require("koa");
+const Redis = require("ioredis");
 const proxy = require("koa-proxies");
 const koa_static = require("koa-static");
 const cookieParser = require("koa-cookie");
@@ -19,23 +20,29 @@ const static_cache_config = {
 
 const app = new Koa();
 
-const room_records = {};
+const cache_data = new Redis({
+  port: 26379,
+  host: "0.0.0.0",
+  keyPrefix: "room:"
+});
 
-io.on("connection", (socket) => {
+
+io.on("connection", async (socket) => {
   const { room_id, user_id } = (socket.handshake.query);
 
-  if (room_records[room_id]) {
-    socket.emit("load_record", room_records[room_id]);
-  } else {
-    room_records[room_id] = [];
-  };
+  if (await cache_data.llen(room_id)) {
+    const records = await cache_data.lrange(room_id, 0, -1);
+    const record_list = records.map((every_element) => JSON.parse(every_element));
+    socket.emit("load_record", record_list);
+  }
 
   socket.broadcast.emit("user_login", JSON.stringify({ user_id }));
 
-  socket.on("emit_message", (params) => {
+  socket.on("emit_message", async (params) => {
     socket.emit("message", params);
     socket.broadcast.emit("message", params);
-    room_records[room_id].push(JSON.parse(params));
+    await cache_data.rpush(room_id, params);
+    await cache_data.expire("5", 60 * 60 * 24 * 30 * 1000);
   });
 
   socket.on("input_focus", (params) => {

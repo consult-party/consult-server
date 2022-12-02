@@ -1,0 +1,55 @@
+version: "3.0"
+
+networks:
+  chat_network:
+
+
+services:
+
+  ## Redis服务
+  redis_server:
+    container_name: chat_redis_server
+    image: redis:7
+    restart: always
+    ports:
+      - 26379:6379
+    volumes:
+      - ./configs/redis:/usr/local/etc/redis/redis.conf/
+      - ./data/redis:/data/
+    networks:
+      - chat_network
+
+  ## Mysql服务
+  mysql_server:
+    container_name: chat_mysql_server
+    image: mysql:8
+    restart: always
+    command: --disable-log-bin --skip-log-bin
+    ports:
+      - 33306:3306
+    volumes:
+      - ./configs/mysql:/etc/mysql/conf.d/
+      - ./data/mysql:/var/lib/mysql/
+      - ./entrypoints/mysql:/docker-entrypoint-initdb.d/
+      - ./dump/mysql:/home/
+    environment:
+      - MYSQL_PASSWORD=gaea0571
+      - MYSQL_ROOT_PASSWORD=gaea0571
+    networks:
+      - chat_network
+
+  ## RabbitMQ服务
+  ## web-url http://localhost:15672
+  rabbitmq_server:
+    container_name: chat_rabbitmq_server
+    hostname: rabbitmq3-management
+    image: rabbitmq:3
+    restart: always
+    volumes:
+      - ./configs/rabbitmq:/etc/rabbitmq/conf.d/
+      - ./data/rabbitmq/mnesia:/var/lib/rabbitmq/mnesia/
+    environment:
+      - RABBITMQ_DEFAULT_USER=root
+      - RABBITMQ_DEFAULT_PASS=gaea0571
+    networks:
+      - chat_network
