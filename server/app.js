@@ -1,7 +1,9 @@
 /* eslint-disable import/no-extraneous-dependencies */
 const Koa = require("koa");
+const http = require("http");
 const Redis = require("ioredis");
 const proxy = require("koa-proxies");
+const socket_io = require("socket.io");
 const koa_static = require("koa-static");
 const cookieParser = require("koa-cookie");
 const bodyParser = require("koa-bodyparser");
@@ -10,7 +12,6 @@ const bodyParser = require("koa-bodyparser");
 const index_page = require("./routers/index_page");
 const proxy_list = require("../configs/proxy_list");
 
-const io = require("./socket");
 
 const static_cache_config = {
   "local": 0,
@@ -19,6 +20,7 @@ const static_cache_config = {
 };
 
 const app = new Koa();
+const server = http.createServer(app.callback());
 
 const cache_data = new Redis({
   port: 26379,
@@ -26,6 +28,7 @@ const cache_data = new Redis({
   keyPrefix: "room:"
 });
 
+const io = socket_io(server);
 
 io.on("connection", async (socket) => {
   const { room_id, user_id } = (socket.handshake.query);
@@ -77,7 +80,8 @@ if (process.env.CHIMERA_RUNTIME === "local") {
 app.use(cookieParser.default());
 app.use(bodyParser());
 app.use(index_page);
-app.listen(8090, () => console.log("server is runing 8090"));
 
 
-
+server.listen(8090, () => {
+  console.log("server is runing 8090")
+});

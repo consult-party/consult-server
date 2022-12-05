@@ -32,7 +32,7 @@ export default function RsaCryptoPage(props) {
   useEffect(() => {
     const room_id = search_params.get("room_id");
     const user_id = search_params.get("user_id");
-    socket.current = io(`ws://${window.location.hostname}:13500?room_id=${room_id}&user_id=${user_id}`);
+    socket.current = io(`/?room_id=${room_id}&user_id=${user_id}`);
   }, [search_params]);
 
   useEffect(() => {
@@ -50,8 +50,11 @@ export default function RsaCryptoPage(props) {
       message.warning({ key: "user_info", content: "对方已离线", duration: 0 });
     });
 
-    socket.current.on("load_record", (records) => {
-      set_message_list(records);
+    socket.current.on("load_record", async (records) => {
+      message.open({ key: "loading", type: "loading", content: "数据加载中...", duration: 0 });
+      await new Promise((resolve) => { setTimeout(resolve, 1000) });
+      await set_message_list(records);
+      message.open({ key: "loading", type: "success", content: "数据加载成功!", duration: 3 });
     });
 
     socket.current.on("input_blur", () => {
@@ -72,9 +75,16 @@ export default function RsaCryptoPage(props) {
 
   }, [search_params]);
 
-  const handleScrollHeight = useCallback(() => {
-    document.body.scrollTop = document.body.scrollHeight;
-    requestAnimationFrame(handleScrollHeight);
+  useEffect(() => {
+    let animation_token;
+    function callback() {
+      document.body.scrollTop = document.body.scrollHeight;
+      animation_token = requestAnimationFrame(callback);
+    };
+    animation_token = requestAnimationFrame(callback);
+    return () => {
+      cancelAnimationFrame(animation_token);
+    };
   }, []);
 
   const handleBlur = useCallback(() => {
@@ -85,8 +95,7 @@ export default function RsaCryptoPage(props) {
   const handleFocus = useCallback(() => {
     const user_id = search_params.get("user_id");
     socket.current.emit("input_focus", JSON.stringify({ user_id }));
-    requestAnimationFrame(handleScrollHeight);
-  }, [search_params, handleScrollHeight]);
+  }, [search_params]);
 
   const handlePublish = useCallback(async () => {
     if (!input_message) {
@@ -114,9 +123,9 @@ export default function RsaCryptoPage(props) {
             onFocus={handleFocus}
             style={{ width: "80%" }}
             placeholder="请输入聊天信息"
+            onPressEnter={handlePublish}
             autoSize={{ minRows: 1, maxRows: 4 }}
             onChange={(event) => set_input_message(event.target.value)}
-            onPressEnter={handlePublish}
           />
           <Button block type="primary" style={{ width: "20%", height: "100%" }} onClick={handlePublish}>
             发送
