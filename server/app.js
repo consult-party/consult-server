@@ -12,7 +12,6 @@ const bodyParser = require("koa-bodyparser");
 const index_page = require("./routers/index_page");
 const proxy_list = require("../configs/proxy_list");
 
-
 const static_cache_config = {
   "local": 0,
   "test": 1000 * 60 * 24 * 30,

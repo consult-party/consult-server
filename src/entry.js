@@ -9,7 +9,6 @@ import RsaCryptoPage from "@/pages/RsaCryptoPage";
 import "@/global.less";
 
 
-
 export default () => (
   <Routes>
     <Route path="/" element={(<BasicLayout />)}>
