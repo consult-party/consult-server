@@ -4,6 +4,7 @@ import { initReactI18next } from "react-i18next";
 import en from "@/locales/en";
 import zh from "@/locales/zh";
 
+
 export default function init18n(current_lauguage) {
 
   const resources = {
